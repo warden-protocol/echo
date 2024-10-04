@@ -1,0 +1,103 @@
+---
+project_name: echo
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: echo-linux-amd64
+    main: ./cmd/echo.go
+    binary: echo
+    goos:
+      - linux
+    goarch:
+      - amd64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .CommitDate }}
+
+  - id: echo-linux-arm64
+    main: ./cmd/echo.go
+    binary: echo
+    goos:
+      - linux
+    goarch:
+      - arm64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .CommitDate }}
+
+  - id: echo-darwin-amd64
+    main: ./cmd/echo.go
+    binary: echo
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .CommitDate }}
+
+  - id: echo-darwin-arm64
+    main: ./cmd/echo.go
+    binary: echo
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .CommitDate }}
+
+universal_binaries:
+  - id: echo-darwin-all
+    ids:
+      - echo-darwin-amd64
+      - echo-darwin-arm64
+    replace: false
+
+dockers:
+  - use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "ghcr.io/warden-protocol/{{ .ProjectName }}:{{ .Version }}-amd64"
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - "ghcr.io/warden-protocol/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+docker_manifests:
+  - name_template: ghcr.io/warden-protocol/{{ .ProjectName }}:{{ .Version }}
+    image_templates:
+      - ghcr.io/warden-protocol/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/warden-protocol/{{ .ProjectName }}:{{ .Version }}-arm64v8
