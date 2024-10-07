@@ -1,6 +1,6 @@
 BUILD_FOLDER = build
 DIST_FOLDER = dist
-GORELEASER_VERSION = v1.22.2
+GORELEASER_VERSION = v2.3.2
 DOCKER := $(shell which docker)
 PACKAGE_NAME = github.com/warden-protocol/echo
 
@@ -59,13 +59,16 @@ update:
 release-dryrun:
 	$(DOCKER) run \
 		--rm \
+		-e GITHUB_TOKEN="$(GITHUB_TOKEN)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/$(PACKAGE_NAME) \
 		-w /go/src/$(PACKAGE_NAME) \
-		goreleaser/goreleaser-cross:$(GORELEASER_VERSION) \
-		--skip-publish \
-		--clean \
-		--skip-validate
+		--userns host \
+		--privileged \
+		ghcr.io/goreleaser/goreleaser:$(GORELEASER_VERSION) \
+		--skip=validate,publish \
+		--snapshot \
+		--clean
 
 release:
 	$(DOCKER) run \
@@ -74,5 +77,7 @@ release:
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/$(PACKAGE_NAME) \
 		-w /go/src/$(PACKAGE_NAME) \
-		goreleaser/goreleaser-cross:$(GORELEASER_VERSION) \
+		--userns host \
+		--privileged \
+		ghcr.io/goreleaser/goreleaser:$(GORELEASER_VERSION) \
 		--clean
